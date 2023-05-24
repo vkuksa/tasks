@@ -2,6 +2,7 @@ package parallel_test
 
 import (
 	"fizzbuzz/solver/parallel"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -21,10 +22,11 @@ func TestBrutForce_Solve(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		// Create a new BruteForce solver with the buffer as the output writer
-		solver := parallel.NewSolver(parallel.Options{tc.num})
+		// Create a new Parallel solver
+		o := parallel.NewOptions(tc.num, 1)
+		solver := parallel.NewSolver(o)
 
-		// Call the Solve method with the specific number
+		// Obrain results
 		results, err := solver.Solve()
 		assert.NoError(t, err, "Error solving FizzBuzz for num=%d: %v", tc.num, err)
 
@@ -34,9 +36,10 @@ func TestBrutForce_Solve(t *testing.T) {
 	}
 }
 
-func BenchmarkBruteForce_Solve(b *testing.B) {
+func BenchmarkBruteForce(b *testing.B) {
 	// Create a new BruteForce solver with the buffer as the output writer
-	solver := parallel.NewSolver(parallel.Options{100})
+	o := parallel.NewOptions(100, runtime.NumCPU())
+	solver := parallel.NewSolver(o)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
