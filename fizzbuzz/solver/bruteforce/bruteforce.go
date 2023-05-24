@@ -9,18 +9,18 @@ type Options struct {
 	N int
 }
 
-type BruteForce struct {
+type Solver struct {
 	o Options
 }
 
-func NewSolver(opt Options) *BruteForce {
-	return &BruteForce{o: opt}
+func NewSolver(opt Options) *Solver {
+	return &Solver{o: opt}
 }
 
-func (bf *BruteForce) Solve() ([]string, error) {
-	var res = make([]string, 0, bf.o.N)
+func (s *Solver) Solve() ([]string, error) {
+	var res = make([]string, 0, s.o.N)
 
-	for i := 1; i <= bf.o.N; i++ {
+	for i := 1; i <= s.o.N; i++ {
 		switch {
 		// Deliberately omitting fallthrough here to increase readability
 		case i%15 == 0:
