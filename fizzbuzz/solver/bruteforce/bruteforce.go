@@ -10,17 +10,17 @@ type Options struct {
 }
 
 type BruteForce struct {
-	O Options
+	o Options
 }
 
-func NewSolver(o Options) *BruteForce {
-	return &BruteForce{O: o}
+func NewSolver(opt Options) *BruteForce {
+	return &BruteForce{o: opt}
 }
 
 func (bf *BruteForce) Solve() ([]string, error) {
-	var res = make([]string, 0, bf.O.N)
+	var res = make([]string, 0, bf.o.N)
 
-	for i := 1; i <= bf.O.N; i++ {
+	for i := 1; i <= bf.o.N; i++ {
 		switch {
 		// Deliberately omitting fallthrough here to increase readability
 		case i%15 == 0:
