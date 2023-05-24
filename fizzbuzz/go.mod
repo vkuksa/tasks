@@ -1,4 +1,4 @@
-module fizzbuzz
+module github.com/vkuksa/tasks/fizzbuzz
 
 go 1.20
 

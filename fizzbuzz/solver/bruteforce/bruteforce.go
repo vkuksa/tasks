@@ -1,3 +1,5 @@
+// Implements classic solution of FizzBuzz
+
 package bruteforce
 
 import (
@@ -17,7 +19,7 @@ func NewSolver(o *Options) *Solver {
 	return &Solver{o: o}
 }
 
-// Classic solution of FizzBuzz
+// This function does not return any errors
 func (s *Solver) Solve() ([]string, error) {
 	var res = make([]string, 0, s.o.N)
 

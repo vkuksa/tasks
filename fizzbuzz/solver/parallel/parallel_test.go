@@ -1,11 +1,12 @@
 package parallel_test
 
 import (
-	"fizzbuzz/solver/parallel"
 	"fmt"
 	"runtime"
 	"sort"
 	"testing"
+
+	p "github.com/vkuksa/tasks/fizzbuzz/solver/parallel"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -27,8 +28,8 @@ func TestParallel_Solve(t *testing.T) {
 		t.Run(fmt.Sprintf("workers_%d", nWorkers), func(t *testing.T) {
 			for _, tc := range testCases {
 				// Create a new Parallel solver
-				o := parallel.NewOptions(tc.num, nWorkers)
-				solver := parallel.NewSolver(o)
+				o := p.NewOptions(tc.num, nWorkers)
+				solver := p.NewSolver(o)
 
 				// Obrain results
 				results, err := solver.Solve()
@@ -64,8 +65,8 @@ func haveSameElements(first, second []string) bool {
 
 func BenchmarkParallel(b *testing.B) {
 	// Create a new BruteForce solver with the buffer as the output writer
-	o := parallel.NewOptions(100, runtime.NumCPU())
-	solver := parallel.NewSolver(o)
+	o := p.NewOptions(100, runtime.NumCPU())
+	solver := p.NewSolver(o)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

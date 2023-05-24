@@ -1,3 +1,5 @@
+// Implements solution using worker pool
+
 package parallel
 
 import (
@@ -24,6 +26,7 @@ func NewSolver(opt *Options) *Solver {
 	return &Solver{o: opt}
 }
 
+// Returns no errors
 func (s *Solver) Solve() ([]string, error) {
 	var res = make([]string, 0, s.o.N)
 

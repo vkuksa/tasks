@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	bf "fizzbuzz/solver/bruteforce"
+	bf "github.com/vkuksa/tasks/fizzbuzz/solver/bruteforce"
 
 	"github.com/stretchr/testify/assert"
 )

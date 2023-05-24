@@ -10,15 +10,15 @@ import (
 	"runtime"
 	"strings"
 
-	"fizzbuzz/solver"
-	"fizzbuzz/solver/bruteforce"
-	"fizzbuzz/solver/parallel"
-	"fizzbuzz/solver/parametrised"
+	"github.com/vkuksa/tasks/fizzbuzz/solver"
+	bf "github.com/vkuksa/tasks/fizzbuzz/solver/bruteforce"
+	pl "github.com/vkuksa/tasks/fizzbuzz/solver/parallel"
+	pm "github.com/vkuksa/tasks/fizzbuzz/solver/parametrised"
 )
 
 var (
 	approach = flag.String("a", "brute", "Choose approach to solve a problem. Available options: [brute, concurrent, parametrised]. Default: brute")
-	begin    = flag.Int("b", 0, "Number to perform fizzbuzz from. Default: 0")
+	begin    = flag.Int("b", 1, "Number to perform fizzbuzz from. Default: 0")
 	end      = flag.Int("e", 100, "Number to perform fizzbuzz till. Default: 100")
 )
 
@@ -41,23 +41,22 @@ func main() {
 func createSolver() (solver.Solver, error) {
 	switch *approach {
 	case "brute":
-		o := &bruteforce.Options{N: *end}
-		return bruteforce.NewSolver(o), nil
+		o := &bf.Options{N: *end}
+		return bf.NewSolver(o), nil
 	case "parametrised":
-		t1 := parametrised.NewTerm(func(v int) bool { return v%3 == 0 }, "Fizz")
-		t2 := parametrised.NewTerm(func(v int) bool { return v%5 == 0 }, "Buzz")
-		t3 := parametrised.NewTerm(func(v int) bool { return v%15 == 0 }, "FizzBuzz")
+		terms := make([]*pm.Term[int], 0, 3)
+		terms = append(terms, pm.NewTerm(func(v int) bool { return v%3 == 0 }, "Fizz", pm.LowPriority, false))
+		terms = append(terms, pm.NewTerm(func(v int) bool { return v%5 == 0 }, "Buzz", pm.LowPriority, false))
+		terms = append(terms, pm.NewTerm(func(v int) bool { return v%15 == 0 }, "FizzBuzz", pm.HighPriority, true))
 
-		ts := []*parametrised.Term[int]{t1, t2, t3}
-
-		o, err := parametrised.NewOptions(*begin, *end, ts)
+		o, err := pm.NewOptions(*begin, *end, terms)
 		if err != nil {
 			return nil, fmt.Errorf("createSolver: %w", err)
 		}
-		return parametrised.NewSolver(o), nil
+		return pm.NewSolver(o), nil
 	case "parallel":
-		o := parallel.NewOptions(*end, runtime.NumCPU())
-		return parallel.NewSolver(o), nil
+		o := pl.NewOptions(*end, runtime.NumCPU())
+		return pl.NewSolver(o), nil
 	default:
 		return nil, errors.New("createSolver: unknown options type provided")
 	}
