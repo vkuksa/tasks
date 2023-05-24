@@ -2,15 +2,18 @@ package main
 
 import (
 	"errors"
-	"fizzbuzz/solver"
-	"fizzbuzz/solver/bruteforce"
-	"fizzbuzz/solver/parametrised"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"runtime"
 	"strings"
+
+	"fizzbuzz/solver"
+	"fizzbuzz/solver/bruteforce"
+	"fizzbuzz/solver/parallel"
+	"fizzbuzz/solver/parametrised"
 )
 
 var (
@@ -38,20 +41,23 @@ func main() {
 func createSolver() (solver.Solver, error) {
 	switch *approach {
 	case "brute":
-		o := bruteforce.Options{N: *end}
+		o := &bruteforce.Options{N: *end}
 		return bruteforce.NewSolver(o), nil
 	case "parametrised":
 		t1 := parametrised.NewTerm(func(v int) bool { return v%3 == 0 }, "Fizz")
 		t2 := parametrised.NewTerm(func(v int) bool { return v%5 == 0 }, "Buzz")
 		t3 := parametrised.NewTerm(func(v int) bool { return v%15 == 0 }, "FizzBuzz")
 
-		terms := []*parametrised.Term[int]{t1, t2, t3}
+		ts := []*parametrised.Term[int]{t1, t2, t3}
 
-		o, err := parametrised.NewOptions(*begin, *end, terms)
+		o, err := parametrised.NewOptions(*begin, *end, ts)
 		if err != nil {
 			return nil, fmt.Errorf("createSolver: %w", err)
 		}
 		return parametrised.NewSolver(o), nil
+	case "parallel":
+		o := parallel.NewOptions(*end, runtime.NumCPU())
+		return parallel.NewSolver(o), nil
 	default:
 		return nil, errors.New("createSolver: unknown options type provided")
 	}

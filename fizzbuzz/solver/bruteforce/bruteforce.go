@@ -4,25 +4,26 @@ import (
 	"strconv"
 )
 
-// In this variation only calibrating from 1 to n is available
 type Options struct {
+	// Specifies the end of execution, when incrementing loop index reaches this value
 	N int
 }
 
 type Solver struct {
-	o Options
+	o *Options
 }
 
-func NewSolver(opt Options) *Solver {
-	return &Solver{o: opt}
+func NewSolver(o *Options) *Solver {
+	return &Solver{o: o}
 }
 
+// Classic solution of FizzBuzz
 func (s *Solver) Solve() ([]string, error) {
 	var res = make([]string, 0, s.o.N)
 
 	for i := 1; i <= s.o.N; i++ {
 		switch {
-		// Deliberately omitting fallthrough here to increase readability
+		// Deliberately omitting fallthrough approach here to increase readability
 		case i%15 == 0:
 			res = append(res, "FizzBuzz")
 		case i%3 == 0:

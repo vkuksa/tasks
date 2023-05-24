@@ -9,11 +9,11 @@ type Options struct {
 	// Specifies the end of execution, when incrementing loop index reaches this value
 	N int
 	// Number of workers
-	WorkersCount int
+	wc int
 }
 
 func NewOptions(n int, w int) *Options {
-	return &Options{N: n, WorkersCount: w}
+	return &Options{N: n, wc: w}
 }
 
 type Solver struct {
@@ -33,7 +33,7 @@ func (s *Solver) Solve() ([]string, error) {
 
 	// Create worker goroutines
 	var wg sync.WaitGroup
-	for i := 0; i < s.o.WorkersCount; i++ {
+	for i := 0; i < s.o.wc; i++ {
 		wg.Add(1)
 		go worker(jobs, results, &wg)
 	}

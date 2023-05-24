@@ -11,53 +11,62 @@ type TermFunc[V constraints.Integer] func(v V) bool
 
 // Defines a term to compare agains.
 type Term[V constraints.Integer] struct {
+	// Predicate we use to compare against
 	pred TermFunc[V]
-	str  string
+	// String we return on successfull predicate hit
+	s string
 }
 
-func NewTerm[V constraints.Integer](pred TermFunc[V], s string) *Term[V] {
-	return &Term[V]{pred: pred, str: s}
+// Builder of a new term
+func NewTerm[V constraints.Integer](p TermFunc[V], s string) *Term[V] {
+	return &Term[V]{pred: p, s: s}
 }
 
-// Calibration from B till E
+// Defines options of execution
 type Options[V constraints.Integer] struct {
+	// Beginning value that will be assigned as the start of a loop
 	b V
+	// Ending value that will be assigned as the end of a loop
 	e V
-
-	terms []*Term[V]
+	// Terms to compare values against
+	ts []*Term[V]
 }
 
-func NewOptions[V constraints.Integer](b, e V, t []*Term[V]) (*Options[V], error) {
+// Builder of options
+func NewOptions[V constraints.Integer](b, e V, ts []*Term[V]) (*Options[V], error) {
+	// If begin is larger than end - return an error
 	if b > e {
 		return nil, errors.New("parametrised newoptions: begin is set to be larger than end")
 	}
 
-	return &Options[V]{b: b, e: e, terms: t}, nil
+	return &Options[V]{b: b, e: e, ts: ts}, nil
 }
 
-type Parametrised[V constraints.Integer] struct {
+type Solver[V constraints.Integer] struct {
 	o *Options[V]
 }
 
-func NewSolver[V constraints.Integer](opt *Options[V]) *Parametrised[V] {
-	return &Parametrised[V]{o: opt}
+func NewSolver[V constraints.Integer](o *Options[V]) *Solver[V] {
+	return &Solver[V]{o: o}
 }
 
-// Performance of such approach is questionable
-func (p *Parametrised[V]) Solve() ([]string, error) {
+// Solving function
+func (s *Solver[V]) Solve() ([]string, error) {
 	var res = make([]string, 0)
 
-	for i := p.o.b; i <= p.o.e; i++ {
+	for i := s.o.b; i <= s.o.e; i++ {
 
-		termHit := false
-		for _, term := range p.o.terms {
-			if term.pred(i) {
-				res = append(res, term.str)
-				termHit = true
+		// We should know whether at least one of our terms is hit.
+		hit := false
+		for _, t := range s.o.ts {
+			if t.pred(i) {
+				res = append(res, t.s)
+				hit = true
 			}
 		}
 
-		if !termHit {
+		// If none were hit - we add just a string value
+		if !hit {
 			res = append(res, fmt.Sprint(i))
 
 		}
