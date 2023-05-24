@@ -2,22 +2,11 @@ package bruteforce_test
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	bf "fizzbuzz/solver/bruteforce"
 )
-
-func TestBrutForce_WriteToNilWriter(t *testing.T) {
-	// Create New BruteForce solver
-	solver := bf.NewSolver()
-
-	// Call the Solve method with the specific number
-	err := solver.Solve(nil, 1)
-	if err == nil {
-		t.Fatalf("Expected error for writer equals nil")
-	}
-
-}
 
 func TestBrutForce_Solve(t *testing.T) {
 	testCases := []struct {
@@ -31,29 +20,20 @@ func TestBrutForce_Solve(t *testing.T) {
 		{0, ""},
 	}
 
-	// Create a buffer to capture the output
-	var buf bytes.Buffer
-
-	// Create a new BruteForce solver with the buffer as the output writer
-	solver := bf.NewSolver()
-
 	for _, tc := range testCases {
+		// Create a new BruteForce solver with the buffer as the output writer
+		solver := bf.NewSolver(bf.Options{tc.num})
+
 		// Call the Solve method with the specific number
-		err := solver.Solve(&buf, tc.num)
+		results, err := solver.Solve()
 		if err != nil {
 			t.Fatalf("Error solving FizzBuzz for num=%d: %v", tc.num, err)
 		}
 
-		// Get the captured output
-		output := buf.String()
-
 		// Compare the actual and expected output
-		if output != tc.expected {
+		if output := strings.Join(results, ""); output != tc.expected {
 			t.Fatalf("For num=%d, expected output:\n%s\n\nActual output:\n%s\n", tc.num, tc.expected, output)
 		}
-
-		// Reset the buffer for a next test execution
-		buf.Reset()
 	}
 }
 
@@ -62,12 +42,12 @@ func BenchmarkBruteForce_Solve(b *testing.B) {
 	var buf bytes.Buffer
 
 	// Create a new BruteForce solver with the buffer as the output writer
-	solver := bf.NewSolver()
+	solver := bf.NewSolver(bf.Options{100})
 
 	// Reset the buffer and benchmark the Solve method
 	buf.Reset()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = solver.Solve(&buf, 100)
+		_, _ = solver.Solve()
 	}
 }
