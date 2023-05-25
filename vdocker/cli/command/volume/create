@@ -1,0 +1,11 @@
+
+function Create():
+	if driver.VolumeExists(name) 
+		return
+	
+	error = driver.storage.SaveVolume(volume{name, driver.path})
+	// For example, if storage is local FS, volume may be saved at /var/lib/docker/volumes/										
+
+	return error
+
+// -----------------

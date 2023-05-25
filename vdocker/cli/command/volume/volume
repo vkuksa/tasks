@@ -1,0 +1,11 @@
+
+Driver {
+	volumes List<Volume>
+	path string
+	storage StorageInterface //may represent local FS or cloud, etc
+}
+
+Volume {
+	name string
+	path string
+}

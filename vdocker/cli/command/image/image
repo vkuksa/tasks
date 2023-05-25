@@ -1,0 +1,16 @@
+
+Image {
+	filepath path
+	id string	// manidest.config
+	tag: List<String>,	// manifest.repotags
+    layers: List<Layer>,	// manifest.layers
+    metadata: Dictionary<String, String> // (manifest.id).json {"architecture", "config", "exposed_ports"}...
+}
+
+Layer{
+	id string
+	parent Layer
+	created date
+	state: Tree<DirEntry>,
+	metadata: Dictionary<String, String>	// id, parent, created, container_config
+}

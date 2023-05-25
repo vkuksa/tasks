@@ -1,0 +1,123 @@
+
+// At this point it's assumed input data is validated
+function Build(instructionsFilepath, tagName):
+    // Create a new image build context
+    buildContext = createBuildContext(instructionsFilepath)
+
+    // Initialize an empty image with the provided tag name
+    image = initializeImage(tagName)
+
+    // Iterate over the files in the build context
+    for each file in buildContext:
+		switch file.type:
+			case isDirectory:
+			// If the file is a directory, add it recursively to the image
+			addDirectoryToImage(file, image)
+			case isFile:
+			// If the file is a regular file, add it to the image
+			addFileToImage(file, image)
+
+    // Execute the build process defined in the instuction file (e.g. Dockerfile)
+    executeBuildProcess(buildContext, image)
+
+	// Add metadata
+	saveImage(image)
+
+// ---------------
+
+function createBuildContext(instructionsFilepath):
+	// Initialize an empty build context
+    buildContext = emptyBuildContext()
+
+    instructions = readInstructionsFile(instructionsFilepath)
+
+    for each instruction in instructions:
+        switch instruction.type:
+            case isCopy:
+                source, destination = extractCopyArguments(instruction)
+                buildContext.addFile(source, destination)
+
+            case isAdd:
+                source, destination = extractAddArguments(instruction)
+                buildContext.addFile(source, destination)
+
+            case isWorkdir:
+                directory = extractWorkdirArgument(instruction)
+                buildContext.addDirectory(directory)
+
+			case ...
+
+    return buildContext
+
+// ----------------
+
+function initialiseImage(tagName):
+	image = new Image()
+
+	image.setLayers([])    // An empty list of layers
+	image.setMetadata({})  // An empty dictionary for metadata
+
+	image.setTag(tagName)
+
+	return image
+
+// ----------------
+
+function addFileToImage(file, image):
+    // Create a new layer for the file and add it to the image's layers
+    layer = createLayerFromFile(file)
+    image.addLayer(layer)
+
+// ----------------
+
+function addDirectoryToImage(directory, image):
+    // Create a new layer for the directory and add it to the image's layers
+    layer = createLayerFromDirectory(directory)
+    image.addLayer(layer)
+
+    // Recursively process the files and directories within the directory
+    for each file in directory.files:
+        switch file.type:
+            case isDirectory:
+                // If the file is a subdirectory, recursively add it to the image
+                addDirectoryToImage(file, image)
+            case isFile:
+                // If the file is a regular file, add it to the image
+                addFileToImage(file, image)
+
+//------------------
+
+function executeBuildProcess(buildContext, image):
+	for each command in buildContext:
+		switch instruction.type:
+			case isCopy:
+				// Copy files or directories to the image
+				copyFiles(instruction.source, instruction.destination, buildContext, image)
+			case isRun:
+				// Execute a command within the image
+				executeCommand(instruction.command, image)
+			case isEnv:
+				// Add env variable to image metadata
+				addMetaData(instructuon.argument, image)
+			case ...
+		
+		commitTopLayer(image)
+
+
+// ---------------
+
+function commitTopLayer(image):
+	layer = image.Layers.last
+	layerPath = image.path + "/" + layer.hash 
+	mkdir(layerPath)
+	saveFile(layerPath + "json", json.marshall(layer))
+	saveFile(layerPath + "VERSION")
+	saveFile(image.path, layer.state, execute("tar -cf layer.tar"))
+
+
+// -----------------
+
+function saveImage(image):
+	saveFile(image.path + "/manifest.json", json.marshall("Config": image.hash, , "RepoTags": image.tag, "Layers": marshall(inage.layers.hash)))
+	saveFile(image.path + "/{image.hash}.json", json.marshall(image.metadata))
+	execute("tar -czf {image.path}.tar.gz")
