@@ -1,34 +1,46 @@
 
+Image {
+	filepath path
+	id string	// manidest.config
+	tag: List<String>,	// manifest.repotags
+    layers: List<Layer>,	// manifest.layers
+    metadata: Dictionary<String, String> // (manifest.id).json {"architecture", "config", "exposed_ports"}...
+}
+
+Layer{
+	id string
+	parent Layer
+	created date
+	state: Tree<DirEntry>,
+	metadata: Dictionary<String, String>	// id, parent, created, container_config
+}
+
 // At this point it's assumed input data is validated
 function Build(instructionsFilepath, tagName):
-    // Create a new image build context
+	// Build context - collection of steps, which defined by instructions
     buildContext = createBuildContext(instructionsFilepath)
 
-    // Initialize an empty image with the provided tag name
-    image = initializeImage(tagName)
+	// Dummy creation of image object with tag name
+    image = createImage(tagName)
 
-    // Iterate over the files in the build context
+    // Make the structure of files defined by instructions
     for each file in buildContext:
 		switch file.type:
 			case isDirectory:
-			// If the file is a directory, add it recursively to the image
-			addDirectoryToImage(file, image)
+				addDirectoryToImage(file, image)	// Recursive call of addFile
 			case isFile:
-			// If the file is a regular file, add it to the image
-			addFileToImage(file, image)
+				addFileToImage(file, image)
 
-    // Execute the build process defined in the instuction file (e.g. Dockerfile)
+    // Make our layered representation by executing commands from build context
     executeBuildProcess(buildContext, image)
 
-	// Add metadata
-	saveImage(image)
 
 // ---------------
 
 function createBuildContext(instructionsFilepath):
-	// Initialize an empty build context
     buildContext = emptyBuildContext()
 
+	// Dockerfile is an example of instructions filepath
     instructions = readInstructionsFile(instructionsFilepath)
 
     for each instruction in instructions:
@@ -51,53 +63,14 @@ function createBuildContext(instructionsFilepath):
 
 // ----------------
 
-function initialiseImage(tagName):
-	image = new Image()
-
-	image.setLayers([])    // An empty list of layers
-	image.setMetadata({})  // An empty dictionary for metadata
-
-	image.setTag(tagName)
-
-	return image
-
-// ----------------
-
-function addFileToImage(file, image):
-    // Create a new layer for the file and add it to the image's layers
-    layer = createLayerFromFile(file)
-    image.addLayer(layer)
-
-// ----------------
-
-function addDirectoryToImage(directory, image):
-    // Create a new layer for the directory and add it to the image's layers
-    layer = createLayerFromDirectory(directory)
-    image.addLayer(layer)
-
-    // Recursively process the files and directories within the directory
-    for each file in directory.files:
-        switch file.type:
-            case isDirectory:
-                // If the file is a subdirectory, recursively add it to the image
-                addDirectoryToImage(file, image)
-            case isFile:
-                // If the file is a regular file, add it to the image
-                addFileToImage(file, image)
-
-//------------------
-
 function executeBuildProcess(buildContext, image):
 	for each command in buildContext:
 		switch instruction.type:
 			case isCopy:
-				// Copy files or directories to the image
 				copyFiles(instruction.source, instruction.destination, buildContext, image)
 			case isRun:
-				// Execute a command within the image
 				executeCommand(instruction.command, image)
 			case isEnv:
-				// Add env variable to image metadata
 				addMetaData(instructuon.argument, image)
 			case ...
 		

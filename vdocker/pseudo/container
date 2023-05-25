@@ -1,0 +1,68 @@
+
+Driver {
+    container List<Container> 
+}
+
+Container {
+    Id string
+    pid string
+    created time
+    path string
+    Image string
+    State {
+        Created
+        Running
+        Stopped
+    }
+} 
+
+// vdocker run <image_id>
+function Run(imageId, options):
+    image = getImage(imageId)
+
+    container = createContainer(image, options)
+	
+	prepareCGroup(container)
+    driver.Add(container)
+
+    startContainer(container.id) 
+
+// vdocker stop <container_id>
+function Stop(containerId):
+    container = driver.getContainerById(containerId)
+
+    stopContainer(container.path)
+
+// --------------------
+
+function getImage(imageId):
+	if imageIsStoredLocally 
+		image = lookupImageLocally(imageId)
+	else 
+		image = pullImageFromRegistry(imageId)
+
+	return image 
+	
+// --------------------
+
+function prepareCGroup(conainter):
+    // Create cgroup
+    execute("sudo cgcreate -g cpu,memory:{container.ID}")
+
+    //Set a limits through cgroup
+    execute("sudo cgset -r memory.limit_in_bytes=100000000 {container.ID}")
+    ...
+    
+    // In a given cgroup, run a task, that will create new namespaces, mount /proc, rewrite hostname and changes root 
+    execute("sudo cgexec -g cpu,memory:$UUID unshare -uinpUrf --mount-proc sh -c \"/bin/hostname {container.ID} && chroot {container.Path}\"")
+)	
+
+// --------------------
+
+function startContainer(containerId):
+    execute("nsenter -t {containerId} -p exec -i -u -m -n /bin/sh")
+
+// --------------------
+
+function stopContainer(containerId)
+    execute("sudo cgdelete -r -g cpu,memory:{containerId}")
