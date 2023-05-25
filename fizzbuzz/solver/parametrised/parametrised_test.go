@@ -15,11 +15,6 @@ type testCase[V constraints.Integer] struct {
 	expected string
 }
 
-func TestParametrisedSolver_CheckOptionsError(t *testing.T) {
-	_, err := p.NewOptions(1, 0, nil)
-	assert.Error(t, err)
-}
-
 func TestParametrisedSolver_ints(t *testing.T) {
 	testCasesInt64 := []testCase[int64]{
 		{25, "12Fizz4BuzzFizz78FizzBuzz11Fizz1314FizzBuzz1617Fizz19BuzzFizz2223FizzBuzz"},
@@ -39,35 +34,39 @@ func TestParametrisedSolver_ints(t *testing.T) {
 }
 
 func checkTestCases[V constraints.Integer](t testing.TB, tc []testCase[V]) {
-	terms := make([]*p.Term[V], 0, 3)
-	terms = append(terms, p.NewTerm(func(v V) bool { return v%3 == 0 }, "Fizz", p.LowPriority, false))
-	terms = append(terms, p.NewTerm(func(v V) bool { return v%5 == 0 }, "Buzz", p.LowPriority, false))
-	terms = append(terms, p.NewTerm(func(v V) bool { return v%15 == 0 }, "FizzBuzz", p.HighPriority, true))
+	terms := p.NewTermCollection(
+		p.NewTerm(func(v V) bool { return v%3 == 0 }, "Fizz", p.LowPriority, false),
+		p.NewTerm(func(v V) bool { return v%5 == 0 }, "Buzz", p.LowPriority, false),
+		p.NewTerm(func(v V) bool { return v%15 == 0 }, "FizzBuzz", p.HighPriority, true),
+	)
 
 	// Test cases
 	for _, tc := range tc {
-		opt, err := p.NewOptions(1, tc.num, terms)
-		assert.NoError(t, err)
-
+		opt := p.NewOptions(1, terms)
 		solver := p.NewSolver(opt)
-		result, err := solver.Solve()
+
+		result, err := solver.Solve(0)
+		assert.Error(t, err)
+
+		result, err = solver.Solve(tc.num)
 		assert.NoError(t, err)
 
 		assert.Equal(t, tc.expected, strings.Join(result, ""))
 	}
 }
 
-func BenchmarkBruteForce_Solve(b *testing.B) {
-	terms := make([]*p.Term[int], 0, 3)
-	terms = append(terms, p.NewTerm(func(v int) bool { return v%3 == 0 }, "Fizz", p.LowPriority, false))
-	terms = append(terms, p.NewTerm(func(v int) bool { return v%5 == 0 }, "Buzz", p.LowPriority, false))
-	terms = append(terms, p.NewTerm(func(v int) bool { return v%15 == 0 }, "FizzBuzz", p.HighPriority, true))
+func BenchmarkParametrised_Solve(b *testing.B) {
+	terms := p.NewTermCollection(
+		p.NewTerm(func(v int) bool { return v%3 == 0 }, "Fizz", p.LowPriority, false),
+		p.NewTerm(func(v int) bool { return v%5 == 0 }, "Buzz", p.LowPriority, false),
+		p.NewTerm(func(v int) bool { return v%15 == 0 }, "FizzBuzz", p.HighPriority, true),
+	)
 
-	opt, _ := p.NewOptions(1, 100, terms)
+	opt := p.NewOptions(1, terms)
 	solver := p.NewSolver(opt)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = solver.Solve()
+		_, _ = solver.Solve(100)
 	}
 }

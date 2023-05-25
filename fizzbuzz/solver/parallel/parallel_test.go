@@ -28,11 +28,11 @@ func TestParallel_Solve(t *testing.T) {
 		t.Run(fmt.Sprintf("workers_%d", nWorkers), func(t *testing.T) {
 			for _, tc := range testCases {
 				// Create a new Parallel solver
-				o := p.NewOptions(tc.num, nWorkers)
+				o := p.NewOptions(nWorkers)
 				solver := p.NewSolver(o)
 
 				// Obrain results
-				results, err := solver.Solve()
+				results, err := solver.Solve(tc.num)
 				assert.NoError(t, err, "Error solving FizzBuzz for num=%d: %v", tc.num, err)
 
 				// The order of content of parallel solver would be unspecified
@@ -65,11 +65,11 @@ func haveSameElements(first, second []string) bool {
 
 func BenchmarkParallel(b *testing.B) {
 	// Create a new BruteForce solver with the buffer as the output writer
-	o := p.NewOptions(100, runtime.NumCPU())
+	o := p.NewOptions(runtime.NumCPU())
 	solver := p.NewSolver(o)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = solver.Solve()
+		_, _ = solver.Solve(100)
 	}
 }

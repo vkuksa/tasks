@@ -23,11 +23,10 @@ func TestBrutForce_Solve(t *testing.T) {
 
 	for _, tc := range testCases {
 		// Create a new BruteForce solver
-		o := &bf.Options{tc.num}
-		solver := bf.NewSolver(o)
+		solver := bf.NewSolver()
 
 		// Call the Solve method to obrain results
-		results, err := solver.Solve()
+		results, err := solver.Solve(tc.num)
 		assert.NoError(t, err, "Error solving FizzBuzz for num=%d: %v", tc.num, err)
 
 		// Compare the actual and expected output
@@ -38,11 +37,10 @@ func TestBrutForce_Solve(t *testing.T) {
 
 func BenchmarkBruteForce_Solve(b *testing.B) {
 	// Create a new BruteForce solver with the buffer as the output writer
-	o := &bf.Options{100}
-	solver := bf.NewSolver(o)
+	solver := bf.NewSolver()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = solver.Solve()
+		_, _ = solver.Solve(100)
 	}
 }

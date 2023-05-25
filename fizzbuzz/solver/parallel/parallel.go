@@ -1,5 +1,4 @@
 // Implements solution using worker pool
-
 package parallel
 
 import (
@@ -8,14 +7,12 @@ import (
 )
 
 type Options struct {
-	// Specifies the end of execution, when incrementing loop index reaches this value
-	N int
 	// Number of workers
 	wc int
 }
 
-func NewOptions(n int, w int) *Options {
-	return &Options{N: n, wc: w}
+func NewOptions(w int) *Options {
+	return &Options{wc: w}
 }
 
 type Solver struct {
@@ -26,13 +23,15 @@ func NewSolver(opt *Options) *Solver {
 	return &Solver{o: opt}
 }
 
+// Solve takes n as input, to generate values till it reached starting from 1
+// Refer to https://leetcode.com/problems/fizz-buzz/description/
 // Returns no errors
-func (s *Solver) Solve() ([]string, error) {
-	var res = make([]string, 0, s.o.N)
+func (s *Solver) Solve(n int) ([]string, error) {
+	var res = make([]string, 0, n)
 
 	// Because we know the size of the collection, we can safely use buffered channels
-	jobs := make(chan int, s.o.N)
-	results := make(chan string, s.o.N)
+	jobs := make(chan int, n)
+	results := make(chan string, n)
 
 	// Create worker goroutines
 	var wg sync.WaitGroup
@@ -43,7 +42,7 @@ func (s *Solver) Solve() ([]string, error) {
 
 	// Send jobs to the worker goroutines
 	go func() {
-		for i := 1; i <= s.o.N; i++ {
+		for i := 1; i <= n; i++ {
 			jobs <- i
 		}
 		close(jobs)

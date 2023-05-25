@@ -1,8 +1,9 @@
 package solver
 
 // Interface representing a solver of a problem in a system
-type Solver interface {
+type FizzBuzzSolver interface {
 	// Solve generates a solution of a problem
+	// Takes n as an integer as per description
 	// Solve returns an error if one occured
-	Solve() ([]string, error)
+	Solve(n int) ([]string, error)
 }

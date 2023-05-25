@@ -1,29 +1,23 @@
 // Implements classic solution of FizzBuzz
-
 package bruteforce
 
 import (
 	"strconv"
 )
 
-type Options struct {
-	// Specifies the end of execution, when incrementing loop index reaches this value
-	N int
+type Solver struct{}
+
+func NewSolver() *Solver {
+	return &Solver{}
 }
 
-type Solver struct {
-	o *Options
-}
+// Solve takes n as input, to generate values till it reached starting from 1
+// Refer to https://leetcode.com/problems/fizz-buzz/description/
+// Solve does not return any errors
+func (s *Solver) Solve(n int) ([]string, error) {
+	var res = make([]string, 0, n)
 
-func NewSolver(o *Options) *Solver {
-	return &Solver{o: o}
-}
-
-// This function does not return any errors
-func (s *Solver) Solve() ([]string, error) {
-	var res = make([]string, 0, s.o.N)
-
-	for i := 1; i <= s.o.N; i++ {
+	for i := 1; i <= n; i++ {
 		switch {
 		// Deliberately omitting fallthrough approach here to increase readability
 		case i%15 == 0:
